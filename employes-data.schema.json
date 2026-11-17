@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org",
+  "title": "DynamicCompaniesSchema",
+  "type": "object",
+  "additionalProperties": {
+    "type": "array",
+    "items": {
+      "$ref": "#/$defs/employee"
+    }
+  },
+  "$defs": {
+    "employee": {
+      "type": "object",
+      "required": [
+        "name",
+        "job",
+        "hourly_rate",
+        "weekly_hours_worked",
+        "contract_hours"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "job": {
+          "type": "string"
+        },
+        "hourly_rate": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weekly_hours_worked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "contract_hours": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
