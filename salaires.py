@@ -1,4 +1,10 @@
+# Modules builtin
 import json
+from typing import Literal
+
+# Modules tiers
+# Framework de création d'outil CLI
+import click
 
 # On permet la validation du JSON brut si le module jsonschema est bien dans l'environnement Python courant.
 try:
@@ -14,11 +20,16 @@ except:
 import csv
 
 # Nom du fichier JSON avec données brutes de salaire hebdomaire par filiale et employé.
-DONNEES_IMPUTATIONS_BRUT: str = "employes-data-6ab4f4869d438034200738.json"
+DONNEES_IMPUTATIONS_BRUT: str = (
+    "employes-data.json"  # anciennement: "employes-data-6ab4f4869d438034200738.json"
+)
 # Nom du fichier de validation JSONSchema
 DONNEES_JSONSCHEMA: str = "employes-data.schema.json"
-# Chemin d'écriture du fichier CSV de résumé
-CSV_OUTPUT_FILENAME: str = "resume-rh.csv"
+OUTPUT_FILENAME_PREFIX: str = "resume-rh"
+# Chemin d'écriture du fichier CSV de résumé statistique
+CSV_OUTPUT_FILENAME: str = f"{OUTPUT_FILENAME_PREFIX}.csv"
+# Chemin d'écriture du fichier JSON de résumé statistique
+JSON_OUTPUT_FILENAME: str = f"{OUTPUT_FILENAME_PREFIX}.json"
 
 
 def validate_json_data(data: dict, jsonschema_filename: str) -> bool:
@@ -152,7 +163,7 @@ def print_employees_salaries(employes: list[dict]) -> None:
     """
     for employe in employes:
         print(
-            f"{employe["name"].ljust(15)} | {employe["job"].ljust(20)}| Salaire mensuel: {employe["salaire_mensuel"]:.2f}€"
+            f"{employe['name'].ljust(15)} | {employe['job'].ljust(20)}| Salaire mensuel: {employe['salaire_mensuel']:.2f}€"
         )
 
 
@@ -166,10 +177,10 @@ def print_hr_statistics(stats: dict, entite: str) -> None:
     print_bar()
     print()
     print(f"Statistiques des salaires pour {entite}:")
-    print(f"Salaire moyen: {stats["salaire_moyen"]:.2f}€")
-    print(f"Salaire le plus élevé: {stats["salaire_max"]:.2f}€")
-    print(f"Salaire le plus bas: {stats["salaire_min"]:.2f}€")
-    print(f"Nombre d'employés: {stats["nb_employes"]}")
+    print(f"Salaire moyen: {stats['salaire_moyen']:.2f}€")
+    print(f"Salaire le plus élevé: {stats['salaire_max']:.2f}€")
+    print(f"Salaire le plus bas: {stats['salaire_min']:.2f}€")
+    print(f"Nombre d'employés: {stats['nb_employes']}")
     print()
     print_bar()
 
@@ -194,17 +205,56 @@ def print_group_statistics(donnees_groupe: dict) -> None:
             donnees_filiale["statistiques"], f"l'entreprise {nom_filiale}"
         )
 
-def generate_csv_summary(group_stats):
-    with open(CSV_OUTPUT_FILENAME, "w") as csvfile:
-        writer = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL) 
-        writer.writerow(["Filiale", "")
+
+def generate_json_summary(group_stats: dict):
+    with open(JSON_OUTPUT_FILENAME, "w+") as fp:
+        json.dump(group_stats, fp)
 
 
-def main():
-    group_stats = generate_statistics(DONNEES_IMPUTATIONS_BRUT)
-    print_group_statistics(group_stats)
-    # generate_csv_summary()
+def generate_csv_summary(group_stats: dict):
+    raise NotImplementedError
+    # with open(CSV_OUTPUT_FILENAME, "w") as csvfile:
+    #     writer = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    #     writer.writerow(["Filiale", "Nom employé", "Prénom employé", "Salaire mensuel"])
+
+
+@click.command
+@click.argument(
+    "json_db",
+    default=DONNEES_IMPUTATIONS_BRUT,
+    help="Nom de la base de données brutes JSON",
+)
+@click.option(
+    "--quiet",
+    default=False,
+    show_default=True,
+    help="Ne rien afficher en sortie standard",
+)
+@click.argument(
+    "output-format",
+    default=None,
+    help="Si fourni, exporte un fichier en format JSON ou CSV",
+)
+@click.argument(
+    "output-filename",
+    default="",
+    help=f"Si fourni, exporte un fichier en format JSON ou CSV sur un chemin différent de {OUTPUT_FILENAME_PREFIX}.json/.csv",
+)
+def generate_statistics_cli(
+    json_db: str,
+    quiet: bool = False,
+    output_format: Literal["", "json", "csv"] = "",
+    output_filename: str = "",
+):
+    """Génère des statistiques salariales sur une base de données JSON"""
+    group_stats = generate_statistics(json_db)
+    if not quiet and not output_format:
+        print_group_statistics(group_stats)
+    if output_format == "json":
+        generate_json_summary(group_stats)
+    elif output_format == "csv":
+        generate_csv_summary(group_stats)
 
 
 if __name__ == "__main__":
-    main()
+    generate_statistics_cli()

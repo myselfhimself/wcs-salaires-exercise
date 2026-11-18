@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
     "attrs==26.1.0",
+    "click>=8.5.1",
     "jsonschema==4.26.0",
     "jsonschema-specifications==2025.9.1",
     "referencing==0.37.0",

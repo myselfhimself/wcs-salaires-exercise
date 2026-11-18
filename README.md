@@ -1,13 +1,17 @@
  # Outil statistique RH du groupe
 _Exercice Wild Code School 2026 - DevIA Agentique - fait sans IA_
 
-Cet outil affiche en console, en CSV et en Streamlit les données statistiques de salaires du groupe.
+Cet outil affiche en console, en JSON, en deux CSV (futur : et en Streamlit) les données statistiques de salaires du groupe.
 
 ## Installation
-Ce projet ne dépend d'aucun paquet Python tiers, mis à part [JSON Schema](https://python-jsonschema.readthedocs.io/en/stable/) qui est optionnel.
+Ce projet nécessite [Click](https://click.palletsprojects.com/en/stable/) et optionnellement [JSON Schema](https://python-jsonschema.readthedocs.io/en/stable/).
 
 ```sh
-pip install requirements.txt
+pip install -r requirements.txt
+```
+ou
+```sh
+uv sync # réinstalle à partir du uv.lock
 ```
 ou
 ```sh
@@ -15,7 +19,7 @@ uv add -r requirements.txt
 ```
 ou
 ```sh
-uv add jsonschema
+uv add click jsonschema
 ```
 
 ## Lancement
@@ -23,8 +27,10 @@ La commande unique est sans paramètres :
 
 ```python
 python3 salaires.py [nom du json de données]
-# Exemple:
-
+```
+Pour de l'aide :
+```python
+python3 salaires.py --help
 ```
 
 ## Licence
